@@ -9,7 +9,11 @@ export default function CertificateVerify() {
   const [status, setStatus] = useState<"loading" | "found" | "notfound">("loading");
 
   useEffect(() => { (async () => {
-    const { data } = await supabase.from("certificates").select("*, profiles(full_name)").or(`id.eq.${id},certificate_number.eq.${id}`).maybeSingle();
+    const { data } = await supabase
+      .from("certificates")
+      .select("*, profiles(full_name), formations!certificates_formation_slug_fkey(title)")
+      .or(`id.eq.${id},certificate_number.eq.${id}`)
+      .maybeSingle();
     if (data) {
       setCert(data);
       setStatus("found");
@@ -25,12 +29,16 @@ export default function CertificateVerify() {
         {status === "loading" && <p>Vérification…</p>}
         {status === "notfound" && <div className="admin-empty">Aucun certificat trouvé avec cet identifiant.</div>}
         {status === "found" && cert && (
-          <div className="buy-box" style={{ maxWidth: 480 }}>
-            <p>✅ Certificat valide</p>
-            <p><b>{cert.profiles?.full_name}</b></p>
-            <p>Formation : {cert.formation_slug}</p>
-            <p>N° : {cert.certificate_number}</p>
-            <p>Délivré le {new Date(cert.issued_at).toLocaleDateString("fr-FR")}</p>
+          <div className="certificate">
+            <div className="cert-brand">Tech Academia</div>
+            <div className="cert-seal">✓</div>
+            <h1>certificat valide, délivré à</h1>
+            <div className="cert-name">{cert.profiles?.full_name || "Étudiant Tech Academia"}</div>
+            <div className="cert-course">{cert.formations?.title ?? cert.formation_slug}</div>
+            <div className="cert-meta">
+              <span>N° <b>{cert.certificate_number}</b></span>
+              <span>Délivré le <b>{new Date(cert.issued_at).toLocaleDateString("fr-FR")}</b></span>
+            </div>
           </div>
         )}
       </section>

@@ -42,7 +42,10 @@ export default function QuizAttempt() {
     setResult({ score, total, passed });
     if (user) {
       await supabase.from("quiz_attempts").insert({ user_id: user.id, quiz_id: quizId, answers: selected, score, total, passed });
-      await supabase.from("quiz_results").upsert({ user_id: user.id, formation_slug: quiz?.formation_slug, score, total, percent, passed, attempts: 1 });
+      if (quiz?.kind === "final") {
+        const { data: previous } = await supabase.from("quiz_results").select("attempts").eq("user_id", user.id).eq("formation_slug", quiz?.formation_slug).maybeSingle();
+        await supabase.from("quiz_results").upsert({ user_id: user.id, formation_slug: quiz?.formation_slug, score, total, percent, passed, attempts: (previous?.attempts ?? 0) + 1 });
+      }
       await supabase.from("notifications").insert({ user_id: user.id, title: passed ? "Quiz réussi 🎉" : "Quiz terminé", body: `${quiz?.title} — score ${score}/${total}.` });
     }
   }
@@ -53,12 +56,12 @@ export default function QuizAttempt() {
   return (
     <PublicLayout>
       <section className="page">
-        <span className="eyebrow">QUIZ</span>
+        <span className="eyebrow">{quiz.kind === "module" ? "QUIZ DU MODULE" : "ÉVALUATION FINALE"}</span>
         <h1>{quiz.title}</h1>
         {result ? (
           <div className="buy-box" style={{ maxWidth: 480 }}>
             <p style={{ fontSize: 22, fontWeight: 700 }}>{result.passed ? "✅ Réussi" : "❌ Non validé"}</p>
-            <p>Score : {result.score} / {result.total}</p>
+            <p>Score : {result.score} / {result.total} — {Math.round((result.score / result.total) * 100)}%</p>
             <Link className="btn btn-outline" to="/dashboard">Retour au dashboard</Link>
           </div>
         ) : (

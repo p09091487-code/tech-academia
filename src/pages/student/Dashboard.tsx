@@ -8,11 +8,27 @@ export default function Dashboard() {
   const { profile, user, signOut } = useAuth();
   const [enrollments, setEnrollments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState<Record<string, number>>({});
 
   useEffect(() => { (async () => {
     if (!user) return;
     const { data } = await supabase.from("enrollments").select("*").eq("user_id", user.id);
-    setEnrollments(data ?? []);
+    const rows = data ?? [];
+    setEnrollments(rows);
+    const next: Record<string, number> = {};
+    for (const e of rows) {
+      const { data: f } = await supabase.from("formations").select("id").eq("slug", e.formation_slug).maybeSingle();
+      if (!f) continue;
+      const { data: mods } = await supabase.from("modules").select("id").eq("formation_id", f.id).eq("published", true);
+      const ids = (mods ?? []).map((m: any) => m.id);
+      if (!ids.length) { next[e.formation_slug] = 0; continue; }
+      const { data: courses } = await supabase.from("courses").select("id").in("module_id", ids).eq("published", true);
+      const courseIds = (courses ?? []).map((c: any) => c.id);
+      if (!courseIds.length) { next[e.formation_slug] = 0; continue; }
+      const { data: done } = await supabase.from("course_progress").select("course_id").eq("user_id", user.id).eq("completed", true).in("course_id", courseIds);
+      next[e.formation_slug] = Math.round(((done ?? []).length / courseIds.length) * 100);
+    }
+    setProgress(next);
     setLoading(false);
   })(); }, [user]);
 
@@ -40,6 +56,8 @@ export default function Dashboard() {
               <div className="course-card" key={e.id}>
                 <div className="course-body">
                   <h3>{e.formation_slug}</h3>
+                  <p style={{ margin: "6px 0", color: "#64748b" }}>Progression : <b>{progress[e.formation_slug] ?? 0}%</b></p>
+                  <div style={{ height: 7, background: "#e2e8f0", borderRadius: 999, marginBottom: 10 }}><div style={{ height: 7, width: `${progress[e.formation_slug] ?? 0}%`, background: "#0f172a", borderRadius: 999 }} /></div>
                   <Link to={`/cours/${e.formation_slug}`}>Continuer →</Link>
                 </div>
               </div>

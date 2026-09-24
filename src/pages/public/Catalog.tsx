@@ -5,6 +5,7 @@ import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
 import { useSeo } from "../../hooks/useSeo";
 import FavoriteButton from "../../components/FavoriteButton";
+import CourseVisual from "../../components/CourseVisual";
 
 const LEVELS = [
   { id: "debutant", label: "Débutant" }, { id: "intermediaire", label: "Intermédiaire" }, { id: "avance", label: "Avancé" },
@@ -93,9 +94,7 @@ export default function Catalog() {
               {visible.map((f) => (
                 <article className="course-card" key={f.id} style={{ position: "relative" }}>
                   <FavoriteButton formationId={f.id} />
-                  <div className="course-image" style={f.cover_image ? { backgroundImage: `url(${f.cover_image})`, backgroundSize: "cover" } : undefined}>
-                    {!f.cover_image && <span>TECH ACADEMIA</span>}
-                  </div>
+                  <CourseVisual title={f.title} category={f.formation_categories?.label} imageUrl={f.cover_image} />
                   <div className="course-body">
                     <span className="tag">{f.formation_categories?.label || "Formation"}</span>
                     <h3>{f.title}</h3>

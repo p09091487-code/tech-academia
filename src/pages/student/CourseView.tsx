@@ -13,6 +13,8 @@ export default function CourseView() {
   const [active, setActive] = useState<any>(null);
   const [done, setDone] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
+  const [moduleQuizzes, setModuleQuizzes] = useState<Record<string, any>>({});
+  const [finalQuiz, setFinalQuiz] = useState<any>(null);
 
   useEffect(() => { (async () => {
     const { data: f } = await supabase.from("formations").select("*").eq("slug", slug).maybeSingle();
@@ -20,6 +22,14 @@ export default function CourseView() {
     if (f) {
       const { data: mods } = await supabase.from("modules").select("*").eq("formation_id", f.id).eq("published", true).order("position");
       setModules(mods ?? []);
+      const { data: finalQuizRow } = await supabase.from("quizzes").select("id,title,pass_percent,kind").eq("formation_slug", f.slug).eq("kind", "final").eq("published", true).maybeSingle();
+      setFinalQuiz(finalQuizRow ?? null);
+      if ((mods ?? []).length) {
+        const { data: moduleQuizRows } = await supabase.from("quizzes").select("id,module_id,title,pass_percent,kind").in("module_id", (mods ?? []).map((m: any) => m.id)).eq("kind", "module").eq("published", true);
+        const mq: Record<string, any> = {};
+        for (const q of moduleQuizRows ?? []) mq[q.module_id] = q;
+        setModuleQuizzes(mq);
+      }
       const modIds = (mods ?? []).map((m: any) => m.id);
       let allCourses: any[] = [];
       if (modIds.length) {
@@ -71,12 +81,16 @@ export default function CourseView() {
                   </button>
                 ))}
               </div>
+              {moduleQuizzes[m.id] && (
+                <Link className="btn btn-outline" style={{ marginTop: 6, width: "100%", textAlign: "center" }} to={`/quiz/${moduleQuizzes[m.id].id}`}>🧪 Quiz du module</Link>
+              )}
             </div>
           ))}
         </aside>
         <div>
           {active ? (
             <>
+              {active.image_url && <img src={active.image_url} alt="" style={{ width: "100%", maxHeight: 340, objectFit: "cover", borderRadius: 18, marginBottom: 20 }} />}
               <h1>{active.title}</h1>
               {active.video_url && <p><a href={active.video_url} target="_blank" rel="noreferrer">▶ Voir la vidéo</a></p>}
               {active.pdf_url && <p><a href={active.pdf_url} target="_blank" rel="noreferrer">📄 Télécharger le PDF</a></p>}
@@ -84,6 +98,13 @@ export default function CourseView() {
               <button className="btn btn-primary" onClick={() => markComplete(active.id)} disabled={done.has(active.id)}>
                 {done.has(active.id) ? "✓ Terminé" : "Marquer comme terminé"}
               </button>
+              {finalQuiz && progressPct === 100 && (
+                <div className="buy-box" style={{ marginTop: 18 }}>
+                  <b>🎓 Dernière étape</b>
+                  <p>Tu as terminé tous les cours publiés. Passe maintenant l’évaluation finale pour valider la formation et débloquer ton certificat si tu réussis.</p>
+                  <Link className="btn btn-outline" to={`/quiz/${finalQuiz.id}`}>Passer l’évaluation finale →</Link>
+                </div>
+              )}
             </>
           ) : <p>Aucun cours disponible pour l'instant.</p>}
         </div>

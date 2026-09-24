@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
+import CourseVisual from "../../components/CourseVisual";
 import { useAuth } from "../../context/AuthContext";
 import { useSeo } from "../../hooks/useSeo";
 
@@ -65,6 +66,9 @@ export default function FormationDetail() {
         <span className="eyebrow">{formation.formation_categories?.label || "Formation"}</span>
         <h1>{formation.title}</h1>
         <p>{formation.subtitle}</p>
+        <div style={{ marginTop: 20, borderRadius: 22, overflow: "hidden", border: "1px solid #ffffff14" }}>
+          <CourseVisual title={formation.title} category={formation.formation_categories?.label} imageUrl={formation.cover_image} />
+        </div>
         <div className="detail-grid" style={{ marginTop: 24 }}>
           <div>
             <h2>Présentation</h2>
@@ -82,13 +86,19 @@ export default function FormationDetail() {
               {modules.map((m, i) => (
                 <div className="module-card" key={m.id}>
                   <button className="m-head" onClick={() => setOpenModule(openModule === m.id ? null : m.id)}>
-                    <span><b>Module {i + 1}.</b> {m.title}</span>
+                    <span style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      {m.image_url && <img src={m.image_url} alt="" style={{ width: 44, height: 32, objectFit: "cover", borderRadius: 6 }} />}
+                      <span><b>Module {i + 1}.</b> {m.title}</span>
+                    </span>
                     <span>{(courses[m.id] ?? []).length} cours</span>
                   </button>
                   {openModule === m.id && (
                     <div className="m-body">
                       {(courses[m.id] ?? []).map((c) => (
-                        <div className="m-lesson" key={c.id}><span>▶</span><span>{c.title}</span><span className="len">{c.duration}</span></div>
+                        <div className="m-lesson" key={c.id}>
+                          {c.image_url ? <img src={c.image_url} alt="" style={{ width: 42, height: 30, objectFit: "cover", borderRadius: 6 }} /> : <span>▶</span>}
+                          <span>{c.title}</span><span className="len">{c.duration}</span>
+                        </div>
                       ))}
                     </div>
                   )}

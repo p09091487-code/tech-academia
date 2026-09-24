@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BrainCircuit, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import CourseVisual, { IMAGES } from "../../components/CourseVisual";
 import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
 import { useSeo } from "../../hooks/useSeo";
@@ -44,8 +45,18 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-art">
-          <div className="art-card main-art"><div className="orb"><BrainCircuit size={64} /></div><span>FORMATION</span><b>Construisez des compétences utiles.</b></div>
-          <div className="float-card"><ShieldCheck size={20} /> Apprentissage sécurisé</div>
+          <div className="hero-visual-shell">
+            <div className="hero-visual-backdrop" />
+            <div className="hero-visual-card hero-photo-card">
+              <img src={IMAGES.coding} alt="Étudiant en train de coder sur ordinateur" />
+              <div className="hero-photo-shade" />
+              <div className="hero-visual-top"><span>TECH ACADEMIA / 2026</span><span className="live-dot"><i /> APPRENTISSAGE</span></div>
+              <div className="hero-visual-bottom"><span>APPRENDRE EN PRATIQUE</span><strong>Des compétences.<br />Des projets.<br /><em>Des résultats.</em></strong></div>
+            </div>
+            <div className="float-card"><ShieldCheck size={20} /> Parcours pratique <b>24/7</b></div>
+            <div className="hero-mini-card mini-one"><span>01</span><b>COURS</b><small>+ pratique</small></div>
+            <div className="hero-mini-card mini-two"><span>02</span><b>QUIZ</b><small>validation</small></div>
+          </div>
         </div>
       </section>
 
@@ -57,7 +68,7 @@ export default function Home() {
           <div className="cards">
             {categories.map((c) => (
               <Link key={c.id} to={`/formations?cat=${c.id}`} className="course-card" style={{ textDecoration: "none", color: "inherit" }}>
-                <div className="course-image"><span>{c.label}</span></div>
+                <CourseVisual title={c.label} category={c.label} />
                 <div className="course-body"><h3>{c.label}</h3><p>{c.description}</p></div>
               </Link>
             ))}
@@ -73,7 +84,7 @@ export default function Home() {
           <div className="cards">
             {popular.map((f) => (
               <article className="course-card" key={f.id}>
-                <div className="course-image" style={f.cover_image ? { backgroundImage: `url(${f.cover_image})`, backgroundSize: "cover" } : undefined}>{!f.cover_image && <span>TECH ACADEMIA</span>}</div>
+                <CourseVisual title={f.title} category={f.formation_categories?.label} imageUrl={f.cover_image} />
                 <div className="course-body"><span className="tag">{f.formation_categories?.label || "Formation"}</span><h3>{f.title}</h3><p>{f.short_description}</p><Link to={`/formations/${f.slug}`}>Découvrir →</Link></div>
               </article>
             ))}

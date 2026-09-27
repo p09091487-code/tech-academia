@@ -189,3 +189,23 @@ body{background:radial-gradient(circle at 15% -10%,#26315d 0,transparent 32%),ra
   .site-header, .site-footer, .cert-actions, .page > .eyebrow, .page > h1 { display: none !important; }
   .certificate { margin: 0; box-shadow: none; }
 }
+
+/* --- Dark-theme fix: remove leftover light-mode colors in admin/auth (unreadable text on dark bg) --- */
+.auth-card { background:#0f1422; border-color:#ffffff18; box-shadow:0 20px 50px #0009; }
+.auth-card label { color:#c7d2fe; }
+.auth-card input { background:#0a0e1a; border-color:#ffffff20; color:#eef2ff; }
+.admin-form { background:#0f1422; border-color:#ffffff18; }
+.admin-form label { color:#c7d2fe; }
+.admin-form input, .admin-form select, .admin-form textarea { background:#0a0e1a; border-color:#ffffff20; color:#eef2ff; }
+.admin-empty { background:#0f1422; color:#9aa5c0; border:1px solid #ffffff14; }
+.admin-stat-card { background:#0f1422; border-color:#ffffff18; }
+.admin-stat-card span { color:#9aa5c0; }
+.admin-stat-card b { color:#eef2ff; }
+.chip { background:#0f1422; border-color:#ffffff20; color:#c7d2fe; }
+.m-lesson { color:#c7d2fe; }
+.m-head { background:#12182a; color:#eef2ff; }
+.module-card { background:#0f1422; border-color:#ffffff18; }
+.admin-toolbar h1, .admin-main h1, .admin-main h2 { color:#eef2ff; }
+.admin-main { color:#c7d2fe; }
+.admin-badge.off { background:#1c2333; color:#8994ac; }
+.admin-badge.on { background:#16341f; color:#4ade80; }

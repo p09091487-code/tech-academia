@@ -12,6 +12,7 @@ const DEFAULT_HEADER = [
 const DEFAULT_FOOTER = [
   { label: "Toutes les formations", url: "/formations" }, { label: "Blog", url: "/blog" },
   { label: "Certificats", url: "/certificats" }, { label: "Aide", url: "/aide" },
+  { label: "Confidentialité", url: "/confidentialite" }, { label: "Mentions légales", url: "/mentions-legales" },
 ];
 
 export default function PublicLayout({ children }: { children: ReactNode }) {

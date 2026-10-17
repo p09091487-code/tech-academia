@@ -13,6 +13,7 @@ export default function QuizAttempt() {
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [result, setResult] = useState<{ score: number; total: number; passed: boolean } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { (async () => {
     const { data: q } = await supabase.from("quizzes").select("*").eq("id", quizId).maybeSingle();
@@ -30,24 +31,12 @@ export default function QuizAttempt() {
   })(); }, [quizId]);
 
   async function submit() {
-    let score = 0;
-    for (const q of questions) {
-      const chosen = selected[q.id];
-      const correctAnswer = (answers[q.id] ?? []).find((a) => a.is_correct);
-      if (chosen && correctAnswer && chosen === correctAnswer.id) score += q.points || 1;
-    }
-    const total = questions.reduce((n, q) => n + (q.points || 1), 0);
-    const percent = total ? (score / total) * 100 : 0;
-    const passed = percent >= (quiz?.pass_percent ?? 70);
-    setResult({ score, total, passed });
-    if (user) {
-      await supabase.from("quiz_attempts").insert({ user_id: user.id, quiz_id: quizId, answers: selected, score, total, passed });
-      if (quiz?.kind === "final") {
-        const { data: previous } = await supabase.from("quiz_results").select("attempts").eq("user_id", user.id).eq("formation_slug", quiz?.formation_slug).maybeSingle();
-        await supabase.from("quiz_results").upsert({ user_id: user.id, formation_slug: quiz?.formation_slug, score, total, percent, passed, attempts: (previous?.attempts ?? 0) + 1 });
-      }
-      await supabase.from("notifications").insert({ user_id: user.id, title: passed ? "Quiz réussi 🎉" : "Quiz terminé", body: `${quiz?.title} — score ${score}/${total}.` });
-    }
+    setError(null);
+    if (!user) { setError("Connecte-toi pour valider le quiz."); return; }
+    // Grading is done server-side (submit_quiz) so results cannot be forged from the browser.
+    const { data, error: rpcError } = await supabase.rpc("submit_quiz", { p_quiz_id: quizId, p_answers: selected });
+    if (rpcError || !data) { setError("Impossible d'enregistrer ton résultat. Réessaie dans un instant."); return; }
+    setResult({ score: data.score, total: data.total, passed: data.passed });
   }
 
   if (loading) return <PublicLayout><div className="admin-empty">Chargement…</div></PublicLayout>;
@@ -80,7 +69,7 @@ export default function QuizAttempt() {
               </div>
             ))}
             {questions.length === 0 ? <p>Ce quiz n'a pas encore de questions.</p> : (
-              <button className="btn btn-primary btn-lg" onClick={submit}>Valider mes réponses</button>
+              <>{error && <p style={{ color: "#fca5a5" }}>{error}</p>}<button className="btn btn-primary btn-lg" onClick={submit}>Valider mes réponses</button></>
             )}
           </>
         )}

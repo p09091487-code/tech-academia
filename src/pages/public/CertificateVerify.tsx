@@ -3,22 +3,23 @@ import { useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
 
+type Verified = {
+  cert_number: string;
+  cert_issued_at: string;
+  holder_name: string | null;
+  formation_title: string | null;
+};
+
 export default function CertificateVerify() {
   const { id } = useParams();
-  const [cert, setCert] = useState<any>(null);
+  const [cert, setCert] = useState<Verified | null>(null);
   const [status, setStatus] = useState<"loading" | "found" | "notfound">("loading");
 
   useEffect(() => { (async () => {
-    const { data } = await supabase
-      .from("certificates")
-      .select("*, profiles(full_name), formations!certificates_formation_slug_fkey(title)")
-      .or(`id.eq.${id},certificate_number.eq.${id}`)
-      .maybeSingle();
-    if (data) {
-      setCert(data);
-      setStatus("found");
-      await supabase.from("certificate_verifications").insert({ certificate_id: data.id });
-    } else setStatus("notfound");
+    const { data, error } = await supabase.rpc("verify_certificate", { p_code: id ?? "" });
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!error && row) { setCert(row as Verified); setStatus("found"); }
+    else setStatus("notfound");
   })(); }, [id]);
 
   return (
@@ -33,11 +34,11 @@ export default function CertificateVerify() {
             <div className="cert-brand">Tech Academia</div>
             <div className="cert-seal">✓</div>
             <h1>certificat valide, délivré à</h1>
-            <div className="cert-name">{cert.profiles?.full_name || "Étudiant Tech Academia"}</div>
-            <div className="cert-course">{cert.formations?.title ?? cert.formation_slug}</div>
+            <div className="cert-name">{cert.holder_name || "Étudiant Tech Academia"}</div>
+            <div className="cert-course">{cert.formation_title}</div>
             <div className="cert-meta">
-              <span>N° <b>{cert.certificate_number}</b></span>
-              <span>Délivré le <b>{new Date(cert.issued_at).toLocaleDateString("fr-FR")}</b></span>
+              <span>N° <b>{cert.cert_number}</b></span>
+              <span>Délivré le <b>{new Date(cert.cert_issued_at).toLocaleDateString("fr-FR")}</b></span>
             </div>
           </div>
         )}

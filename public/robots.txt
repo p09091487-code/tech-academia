@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /cours/
+Disallow: /quiz/
+
+Sitemap: https://tech-academia.vercel.app/sitemap.xml

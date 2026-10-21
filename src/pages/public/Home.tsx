@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, Award, BadgeCheck, BookOpen, FileText, Layers, ListChecks, Rocket, ShieldCheck, UserPlus } from "lucide-react";
+import FormationMeta from "../../components/FormationMeta";
 import CourseVisual, { IMAGES } from "../../components/CourseVisual";
 import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
@@ -85,11 +86,30 @@ export default function Home() {
             {popular.map((f) => (
               <article className="course-card" key={f.id}>
                 <CourseVisual title={f.title} category={f.formation_categories?.label} imageUrl={f.cover_image} />
-                <div className="course-body"><span className="tag">{f.formation_categories?.label || "Formation"}</span><h3>{f.title}</h3><p>{f.short_description}</p><Link to={`/formations/${f.slug}`}>Découvrir →</Link></div>
+                <div className="course-body"><span className="tag">{f.formation_categories?.label || "Formation"}</span><h3>{f.title}</h3><p>{f.short_description}</p><FormationMeta level={f.level} duration={f.duration} price={f.price} currency={f.currency} /><Link to={`/formations/${f.slug}`}>Découvrir →</Link></div>
               </article>
             ))}
           </div>
         )}
+      </section>
+
+      <section className="section">
+        <div className="section-head"><div><span className="eyebrow">COMMENT ÇA MARCHE</span><h2>Du premier cours au certificat, en trois étapes.</h2></div></div>
+        <div className="steps">
+          <div className="step"><span className="step-num">1</span><UserPlus size={22} /><h3>Crée ton compte</h3><p>Inscris-toi en une minute, puis choisis ta formation dans le catalogue.</p></div>
+          <div className="step"><span className="step-num">2</span><BookOpen size={22} /><h3>Apprends à ton rythme</h3><p>Modules, leçons, exercices et supports PDF. Ta progression est sauvegardée automatiquement.</p></div>
+          <div className="step"><span className="step-num">3</span><Award size={22} /><h3>Valide et certifie-toi</h3><p>Quiz de module, évaluation finale, puis un certificat contrôlable en ligne.</p></div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="section-head"><div><span className="eyebrow">POURQUOI TECH ACADEMIA</span><h2>Une méthode pensée pour pratiquer.</h2></div></div>
+        <div className="benefits">
+          <div className="benefit"><Layers size={20} /><h3>Parcours structurés</h3><p>Des modules et des leçons progressifs, avec exercices et critères de validation.</p></div>
+          <div className="benefit"><FileText size={20} /><h3>Supports PDF</h3><p>Une fiche récapitulative téléchargeable pour chaque module.</p></div>
+          <div className="benefit"><ListChecks size={20} /><h3>Quiz et évaluations</h3><p>Teste-toi à chaque module, puis passe l'évaluation finale de la formation.</p></div>
+          <div className="benefit"><BadgeCheck size={20} /><h3>Certificat vérifiable</h3><p>Chaque certificat porte un numéro unique que n'importe qui peut contrôler.</p></div>
+        </div>
       </section>
 
       {testimonials.length > 0 && (
@@ -110,6 +130,13 @@ export default function Home() {
           </div>
         </section>
       )}
+
+      <section className="section">
+        <div className="cta-banner">
+          <div><h2>Prêt à commencer ?</h2><p>Choisis une formation et avance à ton rythme, avec des projets concrets à chaque étape.</p></div>
+          <div className="cta-actions"><Link className="btn btn-primary btn-lg" to="/formations"><Rocket size={18} /> Découvrir les formations</Link><Link className="btn btn-ghost btn-lg" to="/connexion">Créer un compte</Link></div>
+        </div>
+      </section>
     </PublicLayout>
   );
 }

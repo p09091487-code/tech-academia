@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import FormationMeta from "../../components/FormationMeta";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -98,7 +99,7 @@ export default function Catalog() {
                   <div className="course-body">
                     <span className="tag">{f.formation_categories?.label || "Formation"}</span>
                     <h3>{f.title}</h3>
-                    <p>{f.short_description || f.subtitle}</p>
+                    <p>{f.short_description || f.subtitle}</p><FormationMeta level={f.level} duration={f.duration} price={f.price} currency={f.currency} />
                     <Link to={`/formations/${f.slug}`}>Découvrir →</Link>
                   </div>
                 </article>

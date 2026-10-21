@@ -22,7 +22,7 @@ export default function QuizAttempt() {
     setQuestions(qs ?? []);
     const ids = (qs ?? []).map((x: any) => x.id);
     if (ids.length) {
-      const { data: as } = await supabase.from("quiz_answers").select("*").in("question_id", ids).order("position");
+      const { data: as } = await supabase.rpc("get_quiz_answers", { p_quiz_id: quizId });
       const grouped: Record<string, any[]> = {};
       for (const a of as ?? []) { grouped[a.question_id] = grouped[a.question_id] || []; grouped[a.question_id].push(a); }
       setAnswers(grouped);

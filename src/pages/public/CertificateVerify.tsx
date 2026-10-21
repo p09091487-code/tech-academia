@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import PublicLayout from "../../layouts/PublicLayout";
 
@@ -12,10 +12,13 @@ type Verified = {
 
 export default function CertificateVerify() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const [code, setCode] = useState("");
   const [cert, setCert] = useState<Verified | null>(null);
   const [status, setStatus] = useState<"loading" | "found" | "notfound">("loading");
 
   useEffect(() => { (async () => {
+    if (!id) { setStatus("notfound"); return; }
     const { data, error } = await supabase.rpc("verify_certificate", { p_code: id ?? "" });
     const row = Array.isArray(data) ? data[0] : data;
     if (!error && row) { setCert(row as Verified); setStatus("found"); }
@@ -27,8 +30,15 @@ export default function CertificateVerify() {
       <section className="page">
         <span className="eyebrow">VÉRIFICATION</span>
         <h1>Vérifier un certificat</h1>
-        {status === "loading" && <p>Vérification…</p>}
-        {status === "notfound" && <div className="admin-empty">Aucun certificat trouvé avec cet identifiant.</div>}
+        {!id && (
+          <form className="verify-form" onSubmit={(e) => { e.preventDefault(); const c = code.trim(); if (c) navigate(`/verification-certificat/${encodeURIComponent(c)}`); }}>
+            <p>Saisis le numéro figurant sur le certificat pour en contrôler l'authenticité.</p>
+            <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="Ex : TA-XXXXXXXX" aria-label="Numéro de certificat" maxLength={64} />
+            <button className="btn btn-primary" type="submit">Vérifier</button>
+          </form>
+        )}
+        {status === "loading" && id && <p>Vérification…</p>}
+        {status === "notfound" && id && <div className="admin-empty">Aucun certificat trouvé avec cet identifiant.</div>}
         {status === "found" && cert && (
           <div className="certificate">
             <div className="cert-brand">Tech Academia</div>
